@@ -46,8 +46,7 @@ export const getMessage = async (req,res)=>{
 
 export const sendMessage = async (req,res)=>{
 
-    const {recieverId,text} = req.body;
-    const file = req.file;
+    const {recieverId,text,image} = req.body;
 
     if(!recieverId) return res.status(404).json({success:false,message:"sender id not found."});
 
@@ -61,26 +60,26 @@ export const sendMessage = async (req,res)=>{
 
         if(test) message.text=text;
 
-        if(file)
+        if(image)
         {
-            const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
-            const fileType = file.originalname.split('.')[1]
-            if (!supportedType.includes(fileType)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "file type not supported."
-                })
-            }
+            // const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
+            // const fileType = file.originalname.split('.')[1]
+            // if (!supportedType.includes(fileType)) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: "file type not supported."
+            //     })
+            // }
 
-            const postSize = file.size
-            const maxSize = 2097152
-            if (postSize > maxSize) {
-                return res.status(413).json({
-                    success: false,
-                    message: "file size is too large."
-                })
-            }
-            const response = await createPostCloudinary(file, "profile pic - chat app")
+            // const postSize = file.size
+            // const maxSize = 2097152
+            // if (postSize > maxSize) {
+            //     return res.status(413).json({
+            //         success: false,
+            //         message: "file size is too large."
+            //     })
+            // }
+            const response = await createPostCloudinary(image, "profile pic - chat app")
 
             if (!response) {
                 return res.status(500).json({
@@ -103,9 +102,9 @@ export const sendMessage = async (req,res)=>{
 
         return res.status(500).json({success:false,message:error.message});
     }
-    finally
-    {
-        if(file) fs.unlinkSync(file.path);
-    }
+    // finally
+    // {
+    //     if(file) fs.unlinkSync(file.path);
+    // }
 
 }

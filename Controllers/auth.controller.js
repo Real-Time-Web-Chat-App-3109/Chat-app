@@ -114,32 +114,31 @@ export const logout = (req, res) => {
 
 export const updateProfile=async (req,res)=>
 {   
-    const file = req.file;
 
     try {
-
+        const {profilePic} = req.body;
         const userId = req.user._id;
         
-        if(!file) return res.status(404).json({success:false,message:"file not found."});
+        if(!profilePic) return res.status(404).json({success:false,message:"profile pic not found."});
 
-        const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
-        const fileType = file.originalname.split('.')[1]
-        if (!supportedType.includes(fileType)) {
-            return res.status(400).json({
-                success: false,
-                message: "file type not supported."
-            })
-        }
+        // const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
+        // const fileType = file.originalname.split('.')[1]
+        // if (!supportedType.includes(fileType)) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "file type not supported."
+        //     })
+        // }
 
-        const postSize = file.size
-        const maxSize = 2097152
-        if (postSize > maxSize) {
-            return res.status(413).json({
-                success: false,
-                message: "file size is too large."
-            })
-        }
-        const response = await createPostCloudinary(file, "profile pic - chat app")
+        // const postSize = file.size
+        // const maxSize = 2097152
+        // if (postSize > maxSize) {
+        //     return res.status(413).json({
+        //         success: false,
+        //         message: "file size is too large."
+        //     })
+        // }
+        const response = await createPostCloudinary(profilePic, "profile pic - chat app")
 
         if (!response) {
             return res.status(500).json({
@@ -173,10 +172,10 @@ export const updateProfile=async (req,res)=>
 
          return res.status(500).json({success:false,message:error.message})
     }
-    finally
-    {
-        if(file) fs.unlinkSync(file.path);
-    }
+    // finally
+    // {
+    //     if(file) fs.unlinkSync(file.path);
+    // }
 }
 
 export const checkAuth = (req, res) => {
