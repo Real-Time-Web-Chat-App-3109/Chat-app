@@ -6,6 +6,7 @@ import morgan from "morgan";
 import authRoute from "./Routes/auth.routes.js"
 import messageRoute from "./Routes/message.routes.js"
 import { cloudinaryConnect } from "./Config/Cloudinary.js";
+import cors from "cors"
 config();
 
 const app = express();
@@ -15,6 +16,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"));
 app.use(morgan("dev"));
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}));
 
 const port = process.env.PORT || 8000;
 
