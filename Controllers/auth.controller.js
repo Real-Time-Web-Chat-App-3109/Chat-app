@@ -138,6 +138,7 @@ export const updateProfile=async (req,res)=>
         //         message: "file size is too large."
         //     })
         // }
+        
         const response = await createPostCloudinary(profilePic, "profile pic - chat app")
 
         if (!response) {
