@@ -2,7 +2,8 @@ import {User} from "../Models/user.model.js"
 import { createPostCloudinary, removePostCloudinary } from "../Utility/Cloudinary.utility.js";
 import { generateToken } from "../Utility/JWTtoken.js";
 import { validateEmail, validateName, validatePassword } from "../Utility/Validations.js";
-import bcrypt from "bcryptjs"  
+import bcrypt from "bcryptjs" 
+import fs from "fs" 
 
 export const signup = async(req, res) => {
 
@@ -35,22 +36,18 @@ export const signup = async(req, res) => {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
 
-            const newUser = new User({
+            let newUser = new User({
                 fullName,
                 email,
                 password: hashedPassword
             })
 
+            newUser = await newUser.save();
+
             if(newUser){
                 generateToken(newUser._id, res)
-                await newUser.save();
-
-                res.status(201).json({
-                    _id: newUser._id,
-                    fullName: newUser.fullName,
-                    email: newUser.email,
-                    profilePic: newUser.profilePic,
-                });
+                
+                res.status(201).json({success:true,message:"Login successfully.",data:newUser});
             } else {
                 res.status(400).json({message: "Invalid user data"});
             }
@@ -88,16 +85,11 @@ export const login = async (req, res) => {
 
         generateToken(user._id, res)
 
-        res.status(200).json({
-            _id:user._id,
-            fullName: user.fullName,
-            email: user.email,
-            profilePic: user.profilePic,
-        })
+        return res.status(200).json({success:true,message:"Login successfully.",data:user})
 
     } catch(error) {
         console.log("Error in login controller", error.message);
-        res.status(500).json({ message: "Internal Server Error"});
+        return res.status(500).json({ message: "Internal Server Error"});
     }
 }
 
@@ -113,32 +105,32 @@ export const logout = (req, res) => {
 
 export const updateProfile=async (req,res)=>
 {   
+    const file = req.file
 
     try {
-        const {profilePic} = req.body;
         const userId = req.user._id;
         
-        if(!profilePic) return res.status(404).json({success:false,message:"profile pic not found."});
+        if(!file) return res.status(404).json({success:false,message:"file not found."});
 
-        // const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
-        // const fileType = file.originalname.split('.')[1]
-        // if (!supportedType.includes(fileType)) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: "file type not supported."
-        //     })
-        // }
+        const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
+        const fileType = file.originalname.split('.')[1]
+        if (!supportedType.includes(fileType)) {
+            return res.status(400).json({
+                success: false,
+                message: "file type not supported."
+            })
+        }
 
-        // const postSize = file.size
-        // const maxSize = 2097152
-        // if (postSize > maxSize) {
-        //     return res.status(413).json({
-        //         success: false,
-        //         message: "file size is too large."
-        //     })
-        // }
+        const postSize = file.size
+        const maxSize = 2097152
+        if (postSize > maxSize) {
+            return res.status(413).json({
+                success: false,
+                message: "file size is too large."
+            })
+        }
 
-        const response = await createPostCloudinary(profilePic, "profile pic - chat app")
+        const response = await createPostCloudinary(file, "profile pic - chat app")
 
         if (!response) {
             return res.status(500).json({
@@ -163,7 +155,7 @@ export const updateProfile=async (req,res)=>
         const updatedUser = await user.save();
         
 
-        return  res.status(200).json({success:true,message:updatedUser})
+        return  res.status(200).json({success:true,message:"profile upd",data:updatedUser})
     } 
     catch (error) 
     {
@@ -172,10 +164,10 @@ export const updateProfile=async (req,res)=>
 
          return res.status(500).json({success:false,message:error.message})
     }
-    // finally
-    // {
-    //     if(file) fs.unlinkSync(file.path);
-    // }
+    finally
+    {
+        if(file) fs.unlinkSync(file.path);
+    }
 }
 
 export const checkAuth = (req, res) => {
