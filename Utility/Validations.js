@@ -20,4 +20,11 @@ const validatePassword = (password)=>
 
 }
 
-export {validateEmail,validateId,validatePassword}
+const validateName = (name)=>
+{
+    const nameRegex = /^[A-Za-z\s]{1,50}$/;
+
+    return nameRegex.test(name);
+}
+
+export {validateEmail,validateId,validatePassword,validateName}

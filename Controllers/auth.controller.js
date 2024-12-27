@@ -1,13 +1,29 @@
-import User from "../Models/user.model.js"
+import {User} from "../Models/user.model.js"
+import { createPostCloudinary } from "../Utility/Cloudinary.utility.js";
 import { generateToken } from "../Utility/JWTtoken.js";
+import { validateEmail, validateName, validatePassword } from "../Utility/Validations.js";
+import bcrypt from "bcryptjs"
+import fs from "fs";    
 
 export const signup = async(req, res) => {
-        const { fullName, email, password} = req.body;
+
+        let { fullName, email, password} = req.body;
+
         try {
 
             if(!fullName || !email || !password){
-                return res.status(400).json({message: "All fields are required"});
+                return res.status(400).json({success:false,message: "All fields are required"});
             }
+
+            email = email.trim().toLowerCase();
+            fullName = fullName.trim().toLowerCase();
+
+            if(!validateEmail(email)) return res.status(400).json({success:false,message: "Not a valid email."});
+
+            if(!validateName(fullName)) return res.status(400).json({success:false,message: "Please enter valid name."});
+
+            if (!validatePassword(password)) return res.status(404).json({ success:false, message: "Password must contain at least 1 lowercase, 1 uppercase , 1 number and 1 special character and length must be between 8-12." });
+
 
             if(password.length < 8){
                 return res.status(400).json({message: "Password must be at least 8 characters"});
@@ -47,14 +63,26 @@ export const signup = async(req, res) => {
 };
 
 export const login = async (req, res) => {
-    const {email, password} = req.body;
+    let {email, password} = req.body;
     try {
+
+        if(!email || !password) return res.status(400).json({success:false,message: "All fields are required"});
+
+        email = email.trim().toLowerCase();
+
+        if(!validateEmail(email)) return res.status(400).json({success:false,message: "Not a valid email."});
+
+
+        if (!validatePassword(password)) return res.status(404).json({ success:false, message: "Password must contain at least 1 lowercase, 1 uppercase , 1 number and 1 special character and length must be between 8-12." });
+
+
         const user = await User.findOne({email})
         if(!user) {
             return res.status(400).json({message: "Invalid credentials"})
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
         if(!isPasswordCorrect){
             return res.status(400).json({message: "Invalid credentials"})
         }
@@ -81,5 +109,60 @@ export const logout = (req, res) => {
     } catch(error) {
         console.log("Error in logout controller", error.message);
         res.status(500).json({ message: "Internal Server Error"});
+    }
+}
+
+export const updateProfile=async (req,res)=>
+{   
+    const file = req.file;
+
+    try {
+
+        const userId = req.user._id;
+        
+        if(!file) return res.status(404).json({success:false,message:"file not found."});
+
+        const supportedType = ["mp4", "mov", "jpg", "jpeg", "png"]
+        const fileType = file.originalname.split('.')[1]
+        if (!supportedType.includes(fileType)) {
+            return res.status(400).json({
+                success: false,
+                message: "file type not supported."
+            })
+        }
+
+        const postSize = file.size
+        const maxSize = 2097152
+        if (postSize > maxSize) {
+            return res.status(413).json({
+                success: false,
+                message: "file size is too large."
+            })
+        }
+        const response = await createPostCloudinary(file, "posts")
+
+        if (!response) {
+            return res.status(500).json({
+                success: false,
+                message: "error while uploading Post."
+            })
+        }
+
+        fs.unlinkSync(file.path);
+
+
+        const updatedUser = await User.findByIdAndUpdate(userId,{profilePic:response.secure_url},{new:true});
+
+        console.log("test");
+
+        return  res.status(200).json({success:true,message:updatedUser})
+    } 
+    catch (error) 
+    {
+         if(file) fs.unlinkSync(file.path);
+
+         console.log("Something went wrong while updating profile.");
+
+         return res.status(500).json({success:false,message:error.message})
     }
 }
