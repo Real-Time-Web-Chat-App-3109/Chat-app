@@ -73,7 +73,7 @@ export const login = async (req, res) => {
         if(!validateEmail(email)) return res.status(400).json({success:false,message: "Not a valid email."});
 
 
-        if (!validatePassword(password)) return res.status(404).json({ success:false, message: "Password must contain at least 1 lowercase, 1 uppercase , 1 number and 1 special character and length must be between 8-12." });
+        if (!validatePassword(password)) return res.status(404).json({ success:false, message: "Please enter correct credentials." });
 
 
         const user = await User.findOne({email})
