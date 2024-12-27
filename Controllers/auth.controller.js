@@ -148,8 +148,6 @@ export const updateProfile=async (req,res)=>
             })
         }
 
-        console.log("test 1");
-
         const user = await User.findById(userId);
 
         if(!user) return res.status(500).json({success:false,message:"user not found."});
@@ -162,7 +160,7 @@ export const updateProfile=async (req,res)=>
 
         user.profilePic=response.secure_url;
         user.cloudinaryId=response.public_id;
-        console.log(user);
+
         const updatedUser = await user.save();
         
 
