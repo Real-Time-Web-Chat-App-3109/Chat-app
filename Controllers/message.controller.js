@@ -1,6 +1,6 @@
 import { User } from "../Models/user.model.js";
 import { Message } from "../Models/message.model.js";
-import { json } from "body-parser";
+// import { json } from "body-parser";
 
 export const getUserForSidebar = async (req, res) => {
 
