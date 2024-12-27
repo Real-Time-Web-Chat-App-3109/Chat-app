@@ -27,4 +27,4 @@ app.use("/api/message",messageRoute);
 ConnectDB();
 cloudinaryConnect();
 
-app.listen(port,()=>{console.log("Server is running on port no ."+port)});
+app.listen(port,()=>{console.log("Server is running on port no. "+port)});

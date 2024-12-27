@@ -1,5 +1,5 @@
 import {User} from "../Models/user.model.js"
-import { createPostCloudinary } from "../Utility/Cloudinary.utility.js";
+import { createPostCloudinary, removePostCloudinary } from "../Utility/Cloudinary.utility.js";
 import { generateToken } from "../Utility/JWTtoken.js";
 import { validateEmail, validateName, validatePassword } from "../Utility/Validations.js";
 import bcrypt from "bcryptjs"
@@ -139,7 +139,7 @@ export const updateProfile=async (req,res)=>
                 message: "file size is too large."
             })
         }
-        const response = await createPostCloudinary(file, "posts")
+        const response = await createPostCloudinary(file, "profile pic - chat app")
 
         if (!response) {
             return res.status(500).json({
@@ -148,21 +148,35 @@ export const updateProfile=async (req,res)=>
             })
         }
 
-        fs.unlinkSync(file.path);
+        console.log("test 1");
 
+        const user = await User.findById(userId);
 
-        const updatedUser = await User.findByIdAndUpdate(userId,{profilePic:response.secure_url},{new:true});
+        if(!user) return res.status(500).json({success:false,message:"user not found."});
 
-        console.log("test");
+        if(user.cloudinaryId)
+        {
+            await removePostCloudinary(user.cloudinaryId);
+        }
+        
+
+        user.profilePic=response.secure_url;
+        user.cloudinaryId=response.public_id;
+        console.log(user);
+        const updatedUser = await user.save();
+        
 
         return  res.status(200).json({success:true,message:updatedUser})
     } 
     catch (error) 
     {
-         if(file) fs.unlinkSync(file.path);
 
          console.log("Something went wrong while updating profile.");
 
          return res.status(500).json({success:false,message:error.message})
+    }
+    finally
+    {
+        if(file) fs.unlinkSync(file.path);
     }
 }
