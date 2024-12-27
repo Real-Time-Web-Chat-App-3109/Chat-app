@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getMessage, getUserForSidebar, sendMessage } from "../Controllers/message.controller.js";
-import { auth } from "../Middleware/auth.middleware";
+import { auth } from "../Middleware/auth.middleware.js";
 
 const router = Router();
 
