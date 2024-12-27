@@ -2,8 +2,7 @@ import {User} from "../Models/user.model.js"
 import { createPostCloudinary, removePostCloudinary } from "../Utility/Cloudinary.utility.js";
 import { generateToken } from "../Utility/JWTtoken.js";
 import { validateEmail, validateName, validatePassword } from "../Utility/Validations.js";
-import bcrypt from "bcryptjs"
-import fs from "fs";    
+import bcrypt from "bcryptjs"  
 
 export const signup = async(req, res) => {
 
@@ -138,7 +137,7 @@ export const updateProfile=async (req,res)=>
         //         message: "file size is too large."
         //     })
         // }
-        
+
         const response = await createPostCloudinary(profilePic, "profile pic - chat app")
 
         if (!response) {
