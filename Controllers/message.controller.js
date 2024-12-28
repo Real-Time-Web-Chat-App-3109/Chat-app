@@ -2,7 +2,8 @@ import { User } from "../Models/user.model.js";
 import { Message } from "../Models/message.model.js";
 import { createPostCloudinary } from "../Utility/Cloudinary.utility.js";
 import fs from "fs";
-// import { json } from "body-parser";
+import { getReceiverSocketId } from "../Utility/Socket.js";
+import { io } from "../Utility/Socket.js";
 
 export const getUserForSidebar = async (req, res) => {
 
@@ -32,7 +33,7 @@ export const getMessage = async (req,res)=>{
 
     try {
         const message = await Message.find({
-            $or:[{senderId:userId,recieverId:otherUserId},{senderId:otherUserId,recieverId:userId}]
+            $or:[{senderId:userId,receiverId:otherUserId},{senderId:otherUserId,receiverId:userId}]
         })
 
         if(!message) return res.status(500).json({success:false,message:"no message found."});
@@ -49,7 +50,7 @@ export const getMessage = async (req,res)=>{
 export const sendMessage = async (req,res)=>{
 
     const {text} = req.body;
-    const recieverId =  req.params.id;
+    const receiverId =  req.params.id;
 
     console.log("test");
 
@@ -57,14 +58,14 @@ export const sendMessage = async (req,res)=>{
 
     console.log(req.body);
 
-    if(!recieverId) return res.status(404).json({success:false,message:"recieverId not found."});
+    if(!receiverId) return res.status(404).json({success:false,message:"receiverId not found."});
 
     const senderId = req.user._id;
 
     try {
         let message = {
             senderId,
-            recieverId,
+            receiverId,
         }
 
         if(text) message.text=text;
@@ -104,6 +105,16 @@ export const sendMessage = async (req,res)=>{
         const savedMessage = await Message.create(message);
 
         if(!savedMessage) return res.status(500).json({success:false,message:"Somthing went wrong while saveing message."});
+
+        
+
+        const receiverSocketId = getReceiverSocketId(receiverId);
+
+
+        if(receiverSocketId)
+        {
+            io.to(receiverSocketId).emit("newMessage",savedMessage);
+        }
 
         return res.status(200).json({success:true,message:"message saved successfully.",data:savedMessage});
     } catch (error) {

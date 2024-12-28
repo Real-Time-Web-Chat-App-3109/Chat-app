@@ -7,9 +7,10 @@ import authRoute from "./Routes/auth.routes.js"
 import messageRoute from "./Routes/message.routes.js"
 import { cloudinaryConnect } from "./Config/Cloudinary.js";
 import cors from "cors"
+import { app , server } from "./Utility/Socket.js";
 config();
 
-const app = express();
+// const app = express();
 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
@@ -32,4 +33,4 @@ app.use("/api/messages",messageRoute);
 ConnectDB();
 cloudinaryConnect();
 
-app.listen(port,()=>{console.log("Server is running on port no. "+port)});
+server.listen(port,()=>{console.log("Server is running on port no. "+port)});
