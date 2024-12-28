@@ -1,5 +1,7 @@
 import { User } from "../Models/user.model.js";
 import { Message } from "../Models/message.model.js";
+import { createPostCloudinary } from "../Utility/Cloudinary.utility.js";
+import fs from "fs";
 // import { json } from "body-parser";
 
 export const getUserForSidebar = async (req, res) => {
@@ -7,7 +9,7 @@ export const getUserForSidebar = async (req, res) => {
   const userId = req.user._id;
 
   try {
-    const data = await User.find(userId, { $ne: userId }).select("-password");
+    const data = await User.find({_id:{ $ne: userId }}).select("-password");
     if (!data)
       return res
         .status(500)
@@ -46,11 +48,16 @@ export const getMessage = async (req,res)=>{
 
 export const sendMessage = async (req,res)=>{
 
-    const {recieverId,text} = req.body;
+    const {text} = req.body;
+    const recieverId =  req.params.id;
+
+    console.log("test");
 
     const file = req.file;
 
-    if(!recieverId) return res.status(404).json({success:false,message:"sender id not found."});
+    console.log(req.body);
+
+    if(!recieverId) return res.status(404).json({success:false,message:"recieverId not found."});
 
     const senderId = req.user._id;
 
@@ -60,7 +67,7 @@ export const sendMessage = async (req,res)=>{
             recieverId,
         }
 
-        if(test) message.text=text;
+        if(text) message.text=text;
 
         if(file)
         {
@@ -81,7 +88,7 @@ export const sendMessage = async (req,res)=>{
                     message: "file size is too large."
                 })
             }
-            const response = await createPostCloudinary(file, "profile pic - chat app")
+            const response = await createPostCloudinary(file, "message image - chat app")
 
             if (!response) {
                 return res.status(500).json({
@@ -98,7 +105,7 @@ export const sendMessage = async (req,res)=>{
 
         if(!savedMessage) return res.status(500).json({success:false,message:"Somthing went wrong while saveing message."});
 
-        return res.status(200).json({success:true,message:"message saved successfully."});
+        return res.status(200).json({success:true,message:"message saved successfully.",data:savedMessage});
     } catch (error) {
         console.log("Somthing went wrong while sending message.");
 

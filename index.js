@@ -27,7 +27,7 @@ app.get("/",(req,res)=>{return res.json({message:"welcome to chat app."})})
 
 
 app.use("/api/auth",authRoute);
-app.use("/api/message",messageRoute);
+app.use("/api/messages",messageRoute);
 
 ConnectDB();
 cloudinaryConnect();
