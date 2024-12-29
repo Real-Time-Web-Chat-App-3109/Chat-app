@@ -1,5 +1,6 @@
 import { Group } from "../Models/group.model.js";
 import { Message } from "../Models/message.model.js";
+import { getReceiverSocketId, io } from "../Utility/Socket.js";
 
 async function createGroup(req, res) {
   let { groupName, members } = req.body;
@@ -138,11 +139,24 @@ async function sendGroupMessage(req, res) {
           message: "Somthing went wrong while saveing message.",
         });
 
-    // const receiverSocketId = getReceiverSocketId(receiverId);
+    const group = await Group.findById(groupId);
 
-    // if (receiverSocketId) {
-    //   io.to(receiverSocketId).emit("newMessage", savedMessage);
-    // }
+    const members = group.members;
+
+    members.forEach((receiverId)=>{
+
+      if(receiverId.equals(senderId)) return;
+
+      const receiverSocketId = getReceiverSocketId(receiverId);
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newGroupMessage", savedMessage);
+      }
+    })
+
+    
+
+    
 
     return res
       .status(200)
