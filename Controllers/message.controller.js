@@ -41,7 +41,7 @@ export const getMessage = async (req,res)=>{
         return res.status(200).json({success:true,message:"messages found successfully.",data:message});
     } catch (error) {
         console.log("something went wrong while fetching data. "+error.message);
-        return res.status(500).json({success:false,message:"sonthing  went wrong."});
+        return res.status(500).json({success:false,message:"something  went wrong."});
     }
 
 }
@@ -52,11 +52,8 @@ export const sendMessage = async (req,res)=>{
     const {text} = req.body;
     const receiverId =  req.params.id;
 
-    console.log("test");
-
     const file = req.file;
 
-    console.log(req.body);
 
     if(!receiverId) return res.status(404).json({success:false,message:"receiverId not found."});
 

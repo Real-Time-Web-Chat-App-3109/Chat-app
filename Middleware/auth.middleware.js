@@ -15,6 +15,7 @@ export const auth=async (req,res,next)=>{
             }) 
         }
 
+
         //decoding jwt token
         try{
             const decode=jwt.verify(token,process.env.JWT_SECRET);
@@ -30,6 +31,7 @@ export const auth=async (req,res,next)=>{
             return next();
 
         } catch(err){
+
             return res.status(401).json({
                 success:false,
                 message:"error while decoding."
